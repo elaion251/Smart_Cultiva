@@ -3,15 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Cultiva</title>
+<title>Smart Cultiva - Smart Farming Dashboard</title>
 
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
+<!-- Toggle Dark / Light -->
+<button class="toggle-btn" onclick="toggleMode()">🌙 / ☀ Mode</button>
+
 <div class="dashboard">
-<h1>🌱 Smart Cultiva</h1>
+<h1>🌱 Smart Cultiva Dashboard</h1>
 
 <div class="card">
 <h2>Input Kondisi Tanah</h2>
@@ -35,91 +38,127 @@
 
 <div class="grid">
 <div class="card">
-<h2>Top 5 Tanaman Paling Cocok</h2>
+<h2>🏆 Top 5 Tanaman Paling Cocok</h2>
 <div id="ranking"></div>
 </div>
 
 <div class="card">
-<h2>Grafik Kondisi Tanah</h2>
+<h2>📊 Grafik Kondisi Tanah</h2>
 <canvas id="chartTanah"></canvas>
 </div>
 </div>
+
 </div>
 
 <script>
 let tanamanDB = [];
 let chart;
 
+// Load database JSON
 async function loadDatabase() {
-    const response = await fetch('tanaman.json');
-    tanamanDB = await response.json();
+    try {
+        const response = await fetch('tanaman.json');
+        tanamanDB = await response.json();
+        console.log("Database loaded:", tanamanDB.length, "tanaman");
+    } catch (error) {
+        alert("Gagal memuat database tanaman.json");
+        console.error(error);
+    }
 }
+
 loadDatabase();
 
+// Hitung skor kecocokan
 function hitungSkor(t, ph, suhu, kelembapan) {
-let skor = 0;
+    let skor = 0;
 
-if (ph >= t.phMin && ph <= t.phMax) skor += 40;
-else skor += Math.max(0, 40 - Math.abs(ph - (t.phMin+t.phMax)/2)*10);
+    // Skor pH (40%)
+    if (ph >= t.phMin && ph <= t.phMax) {
+        skor += 40;
+    } else {
+        skor += Math.max(0, 40 - Math.abs(ph - (t.phMin + t.phMax)/2) * 10);
+    }
 
-if (suhu >= t.suhuMin && suhu <= t.suhuMax) skor += 40;
-else skor += Math.max(0, 40 - Math.abs(suhu - (t.suhuMin+t.suhuMax)/2)*5);
+    // Skor Suhu (40%)
+    if (suhu >= t.suhuMin && suhu <= t.suhuMax) {
+        skor += 40;
+    } else {
+        skor += Math.max(0, 40 - Math.abs(suhu - (t.suhuMin + t.suhuMax)/2) * 5);
+    }
 
-if (kelembapan === t.kelembapan) skor += 20;
+    // Skor Kelembapan (20%)
+    if (kelembapan === t.kelembapan) {
+        skor += 20;
+    }
 
-return Math.round(skor);
+    return Math.round(skor);
 }
 
+// Analisis utama
 function analisis() {
-let ph = parseFloat(document.getElementById("ph").value);
-let suhu = parseFloat(document.getElementById("suhu").value);
-let kelembapan = document.getElementById("kelembapan").value;
 
-if (isNaN(ph) || isNaN(suhu) || kelembapan === "") {
-alert("Lengkapi semua data!");
-return;
+    if(tanamanDB.length === 0){
+        alert("Database belum siap, tunggu beberapa detik lalu coba lagi.");
+        return;
+    }
+
+    let ph = parseFloat(document.getElementById("ph").value);
+    let suhu = parseFloat(document.getElementById("suhu").value);
+    let kelembapan = document.getElementById("kelembapan").value;
+
+    if (isNaN(ph) || isNaN(suhu) || kelembapan === "") {
+        alert("Lengkapi semua data!");
+        return;
+    }
+
+    let hasil = tanamanDB.map(t => ({
+        nama: t.nama,
+        skor: hitungSkor(t, ph, suhu, kelembapan)
+    }));
+
+    hasil.sort((a,b)=> b.skor - a.skor);
+
+    let rankingHTML = "";
+    hasil.slice(0,5).forEach((t,i)=>{
+        rankingHTML += `
+        <div class="ranking-item">
+            <strong>#${i+1} ${t.nama}</strong><br>
+            ${t.skor}% kecocokan
+        </div>`;
+    });
+
+    document.getElementById("ranking").innerHTML = rankingHTML;
+
+    // Grafik Radar
+    let skorPH = (ph/14)*100;
+    let skorSuhu = (suhu/40)*100;
+    let skorLembap = kelembapan==="kering"?40:
+                     kelembapan==="sedang"?80:100;
+
+    const ctx = document.getElementById('chartTanah').getContext('2d');
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type:'radar',
+        data:{
+            labels:['pH','Suhu','Kelembapan'],
+            datasets:[{
+                label:'Kondisi Tanah',
+                data:[skorPH, skorSuhu, skorLembap]
+            }]
+        },
+        options:{
+            responsive:true,
+            scales:{ r:{ min:0, max:100 } }
+        }
+    });
 }
 
-let hasil = tanamanDB.map(t => ({
-nama: t.nama,
-skor: hitungSkor(t, ph, suhu, kelembapan)
-}));
-
-hasil.sort((a,b)=> b.skor - a.skor);
-
-let rankingHTML = "";
-hasil.slice(0,5).forEach((t,i)=>{
-rankingHTML += `<div class="ranking-item">#${i+1} ${t.nama} - ${t.skor}% cocok</div>`;
-});
-
-document.getElementById("ranking").innerHTML = rankingHTML;
-
-// Grafik Radar
-let skorPH = (ph/14)*100;
-let skorSuhu = (suhu/40)*100;
-let skorLembap = kelembapan==="kering"?40:kelembapan==="sedang"?80:100;
-
-const ctx = document.getElementById('chartTanah').getContext('2d');
-if (chart) chart.destroy();
-
-chart = new Chart(ctx, {
-type:'radar',
-data:{
-labels:['pH','Suhu','Kelembapan'],
-datasets:[{
-label:'Kondisi Tanah',
-data:[skorPH, skorSuhu, skorLembap]
-}]
-},
-options:{
-scales:{ r:{ min:0, max:100 } }
-}
-});
-}
 // Dark / Light Mode
 function toggleMode() {
     document.body.classList.toggle("light-mode");
-    
+
     if(document.body.classList.contains("light-mode")){
         localStorage.setItem("mode","light");
     } else {
@@ -134,6 +173,6 @@ window.onload = function(){
     }
 }
 </script>
-<button class="toggle-btn" onclick="toggleMode()">🌙 / ☀ Mode</button>
+
 </body>
 </html>
