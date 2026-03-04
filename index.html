@@ -10,9 +10,6 @@
 </head>
 <body>
 
-<!-- Toggle Dark / Light -->
-<button class="toggle-btn" onclick="toggleMode()">🌙 / ☀ Mode</button>
-
 <div class="dashboard">
 <h1>🌱 Smart Cultiva Dashboard</h1>
 
@@ -175,24 +172,6 @@ function analisis() {
         }
     }
 });
-}
-
-// Dark / Light Mode
-function toggleMode() {
-    document.body.classList.toggle("light-mode");
-
-    if(document.body.classList.contains("light-mode")){
-        localStorage.setItem("mode","light");
-    } else {
-        localStorage.setItem("mode","dark");
-    }
-}
-
-// Load mode saat halaman dibuka
-window.onload = function(){
-    if(localStorage.getItem("mode") === "light"){
-        document.body.classList.add("light-mode");
-    }
 }
 </script>
 
