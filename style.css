@@ -64,17 +64,23 @@ body {
     transition: background 0.4s ease, color 0.4s ease;
 }
 
-/* Form Row */
 .form-row {
     display: flex;
-    gap: 20px;
+    justify-content: center;   /* posisi tengah horizontal */
+    gap: 30px;
+    margin-top: 15px;
     flex-wrap: wrap;
 }
 
-/* Input kecil */
+/* Bungkus tiap input */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;  /* label & input rata tengah */
+}
+
+/* Ukuran input */
 .input-small {
     width: 180px;
-}
-body.light-mode button:hover {
-    background: #1565c0;
+    text-align: center;   /* angka di tengah */
 }
