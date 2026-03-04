@@ -64,6 +64,17 @@ body {
     transition: background 0.4s ease, color 0.4s ease;
 }
 
+/* Form Row */
+.form-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* Input kecil */
+.input-small {
+    width: 180px;
+}
 body.light-mode button:hover {
     background: #1565c0;
 }
