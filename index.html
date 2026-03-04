@@ -140,19 +140,41 @@ function analisis() {
     if (chart) chart.destroy();
 
     chart = new Chart(ctx, {
-        type:'radar',
-        data:{
-            labels:['pH','Suhu','Kelembapan'],
-            datasets:[{
-                label:'Kondisi Tanah',
-                data:[skorPH, skorSuhu, skorLembap]
-            }]
+    type:'radar',
+    data:{
+        labels:['pH','Suhu','Kelembapan'],
+        datasets:[{
+            label:'Kondisi Tanah',
+            data:[skorPH, skorSuhu, skorLembap],
+            
+            backgroundColor: 'rgba(0, 230, 118, 0.3)',  // warna isi
+            borderColor: '#00e676',                     // garis utama
+            borderWidth: 2,
+            pointBackgroundColor: '#00e676',
+            pointBorderColor: '#ffffff',
+            pointHoverBackgroundColor: '#ffffff',
+            pointHoverBorderColor: '#00e676'
+        }]
+    },
+    options:{
+        responsive:true,
+        scales:{ 
+            r:{ 
+                min:0, 
+                max:100,
+                grid: { color: 'rgba(255,255,255,0.2)' },
+                angleLines: { color: 'rgba(255,255,255,0.2)' },
+                pointLabels: { color: 'white' },
+                ticks: { backdropColor: 'transparent', color: 'white' }
+            } 
         },
-        options:{
-            responsive:true,
-            scales:{ r:{ min:0, max:100 } }
+        plugins: {
+            legend: {
+                labels: { color: 'white' }
+            }
         }
-    });
+    }
+});
 }
 
 // Dark / Light Mode
