@@ -1,130 +1,220 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smart Cultiva - Smart Farming Dashboard</title>
+
+<title>Smart Cultiva - Analisis Tanaman</title>
 
 <link rel="stylesheet" href="style.css">
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
+
 <body>
 
-<div class="dashboard">
-<h1>🌱 Smart Cultiva Dashboard</h1>
+<div class="container">
+
+<h1>🌱 Smart Cultiva</h1>
+
+<p class="subtitle">
+Analisis tanaman terbaik berdasarkan pH tanah, suhu tanah, dan kelembapan tanah
+</p>
 
 <div class="card">
+
 <h2>Input Kondisi Tanah</h2>
 
 <div class="form-row">
 
-    <div class="form-group">
-        <label>pH Tanah</label>
-        <input type="number" id="ph" step="0.1" placeholder="6.5" class="input-small">
-    </div>
+<div class="form-group">
+<label>pH Tanah</label>
+<input type="number" id="ph" step="0.1" placeholder="6.5" class="input-small">
+</div>
 
-    <div class="form-group">
-        <label>Suhu Tanah (°C)</label>
-        <input type="number" id="suhu" placeholder="27" class="input-small">
-    </div>
+<div class="form-group">
+<label>Suhu Tanah (°C)</label>
+<input type="number" id="suhu" placeholder="27" class="input-small">
+</div>
 
 </div>
 
-<label>Kelembapan</label>
-<select id="kelembapan">
-<option value="">Pilih</option>
+<div class="form-group-center">
+
+<label>Kelembapan Tanah</label>
+
+<select id="lembap">
+
 <option value="sangat_kering">Sangat Kering</option>
 <option value="kering">Kering</option>
 <option value="normal">Normal</option>
 <option value="basah">Basah</option>
 <option value="sangat_basah">Sangat Basah</option>
+
 </select>
 
-<button onclick="analisis()">Analisis Sekarang</button>
 </div>
 
-<div class="grid">
+<button onclick="analisis()">Analisis Tanaman</button>
+
+</div>
+
 <div class="card">
-<h2>🏆 Top 5 Tanaman Paling Cocok</h2>
+
+<h2>Grafik Kondisi Tanah</h2>
+
+<canvas id="chart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h2>Top 5 Tanaman Paling Cocok</h2>
+
 <div id="ranking"></div>
-</div>
 
-<div class="card">
-<h2>📊 Grafik Kondisi Tanah</h2>
-<canvas id="chartTanah"></canvas>
-</div>
 </div>
 
 </div>
 
 <script>
+
 let database = []
 let chart = null
 
 fetch('tanaman.json')
-    .then(res => res.json())
-    .then(data => {
-        database = data
-    })
+.then(res => res.json())
+.then(data => {
+database = data
+})
 
-// Hitung skor kecocokan
 function hitungSkorPH(ph, min, max){
-    if(ph >= min && ph <= max) return 40
-        let selisih = Math.min(Math.abs(ph-min), Math.abs(ph-max))
-            return Math.max(0, 40 - selisih*10)
-}
-function hitungSkorSuhu(suhu, min, max){
-    if(suhu >= min && suhu <= max) return 40
-        let selisih = Math.min(Math.abs(suhu-min), Math.abs(suhu-max))
-            return Math.max(0, 40 - selisih*3)
+
+if(ph >= min && ph <= max) return 40
+
+let selisih = Math.min(Math.abs(ph-min), Math.abs(ph-max))
+
+return Math.max(0, 40 - selisih*10)
+
 }
 
-// Analisis utama
+function hitungSkorSuhu(suhu, min, max){
+
+if(suhu >= min && suhu <= max) return 40
+
+let selisih = Math.min(Math.abs(suhu-min), Math.abs(suhu-max))
+
+return Math.max(0, 40 - selisih*3)
+
+}
+
 function analisis(){
-    let ph = parseFloat(document.getElementById("ph").value)
-    let suhu = parseFloat(document.getElementById("suhu").value)
-    let lembap = document.getElementById("lembap").value
+
+let ph = parseFloat(document.getElementById("ph").value)
+let suhu = parseFloat(document.getElementById("suhu").value)
+let lembap = document.getElementById("lembap").value
 
 if(!ph || !suhu){
 alert("Isi pH dan suhu tanah terlebih dahulu")
 return
 }
-    function tampilkanRanking(data){
-    let div = document.getElementById("ranking")
-        div.innerHTML=""
-        data.forEach((item,i)=>{
-        div.innerHTML += `
-        <div class="ranking-item">
-        <b>${i+1}. ${item.nama}</b>
-        <span>Skor : ${item.skor}</span>
-        </div>`})
+
+let hasil = database.map(tanaman=>{
+
+let skor = 0
+
+skor += hitungSkorPH(ph,tanaman.ph_min,tanaman.ph_max)
+
+skor += hitungSkorSuhu(suhu,tanaman.suhu_min,tanaman.suhu_max)
+
+if(tanaman.kelembapan.includes(lembap)) skor += 20
+
+return {
+nama: tanaman.nama,
+skor: skor
+}
+
+})
+
+hasil.sort((a,b)=>b.skor-a.skor)
+
+let top5 = hasil.slice(0,5)
+
+tampilkanRanking(top5)
+
+buatChart(ph,suhu,lembap)
+
+}
+
+function tampilkanRanking(data){
+
+let div = document.getElementById("ranking")
+
+div.innerHTML=""
+
+data.forEach((item,i)=>{
+
+div.innerHTML += `
+<div class="ranking-item">
+
+<b>${i+1}. ${item.nama}</b>
+
+<span>Skor : ${item.skor}</span>
+
+</div>
+`
+
+})
+
 }
 
 function buatChart(ph,suhu,lembap){
-    let skorPH = ph/14*100
-    let skorSuhu = suhu/40*100
-    let skorLembap = 50
-        if(lembap==="sangat_kering") skorLembap=20
-        if(lembap==="kering") skorLembap=40
-        if(lembap==="normal") skorLembap=60
-        if(lembap==="basah") skorLembap=80
-        if(lembap==="sangat_basah") skorLembap=100
-        let ctx = document.getElementById("chart")
+
+let skorPH = ph/14*100
+
+let skorSuhu = suhu/40*100
+
+let skorLembap = 50
+
+if(lembap==="sangat_kering") skorLembap=20
+if(lembap==="kering") skorLembap=40
+if(lembap==="normal") skorLembap=60
+if(lembap==="basah") skorLembap=80
+if(lembap==="sangat_basah") skorLembap=100
+
+let ctx = document.getElementById("chart")
+
 if(chart) chart.destroy()
+
 chart = new Chart(ctx,{
+
 type:'radar',
+
 data:{
 labels:['pH Tanah','Suhu Tanah','Kelembapan Tanah'],
+
 datasets:[{
+
 label:'Kondisi Tanah',
+
 data:[skorPH,skorSuhu,skorLembap],
+
 backgroundColor:'rgba(0,255,150,0.2)',
+
 borderColor:'#00ff95',
+
 borderWidth:2,
+
 pointBackgroundColor:'#00ff95'
+
 }]
+
 },
+
 options:{
+
 scales:{
 r:{
 min:0,
@@ -134,18 +224,20 @@ angleLines:{color:'rgba(255,255,255,0.2)'},
 pointLabels:{color:'white'}
 }
 },
+
 plugins:{
 legend:{
 labels:{color:'white'}
 }
 }
-}
-})
-}
-</script>
 
-</body>
-</html>
+}
+
+})
+
+}
+
+</script>
 
 </body>
 </html>
