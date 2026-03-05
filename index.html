@@ -81,23 +81,17 @@ function hitungSkor(t, ph, suhu, kelembapan) {
 
     // Skor pH (40%)
     if (ph >= t.phMin && ph <= t.phMax) {
-        skor += 40;
+        skor += 30;
     } else {
         skor += Math.max(0, 40 - Math.abs(ph - (t.phMin + t.phMax)/2) * 10);
     }
 
     // Skor Suhu (40%)
     if (suhu >= t.suhuMin && suhu <= t.suhuMax) {
-        skor += 40;
+        skor += 30;
     } else {
         skor += Math.max(0, 40 - Math.abs(suhu - (t.suhuMin + t.suhuMax)/2) * 5);
     }
-
-    // Skor Kelembapan (20%)
-    if (kelembapan === t.kelembapan) {
-        skor += 20;
-    }
-    
     if(tanaman.kelembapan.includes(kelembapan)){
     skor += 40;
 }
