@@ -58,130 +58,94 @@
 </div>
 
 <script>
-let tanamanDB = [];
-let chart;
+let database = []
+let chart = null
 
-// Load database JSON
-async function loadDatabase() {
-    try {
-        const response = await fetch('tanaman.json');
-        tanamanDB = await response.json();
-        console.log("Database loaded:", tanamanDB.length, "tanaman");
-    } catch (error) {
-        alert("Gagal memuat database tanaman.json");
-        console.error(error);
-    }
-}
-
-loadDatabase();
+fetch('tanaman.json')
+    .then(res => res.json())
+    .then(data => {
+        database = data
+    })
 
 // Hitung skor kecocokan
-function hitungSkor(t, ph, suhu, kelembapan) {
-    let skor = 0;
-
-    // Skor pH (40%)
-    if (ph >= t.phMin && ph <= t.phMax) {
-        skor += 30;
-    } else {
-        skor += Math.max(0, 40 - Math.abs(ph - (t.phMin + t.phMax)/2) * 10);
-    }
-
-    // Skor Suhu (40%)
-    if (suhu >= t.suhuMin && suhu <= t.suhuMax) {
-        skor += 30;
-    } else {
-        skor += Math.max(0, 40 - Math.abs(suhu - (t.suhuMin + t.suhuMax)/2) * 5);
-    }
-    if(tanaman.kelembapan.includes(kelembapan)){
-    skor += 40;
+function hitungSkorPH(ph, min, max){
+    if(ph >= min && ph <= max) return 40
+        let selisih = Math.min(Math.abs(ph-min), Math.abs(ph-max))
+            return Math.max(0, 40 - selisih*10)
 }
-
-    return Math.round(skor);
+function hitungSkorSuhu(suhu, min, max){
+    if(suhu >= min && suhu <= max) return 40
+        let selisih = Math.min(Math.abs(suhu-min), Math.abs(suhu-max))
+            return Math.max(0, 40 - selisih*3)
 }
 
 // Analisis utama
-function analisis() {
+function analisis(){
+    let ph = parseFloat(document.getElementById("ph").value)
+    let suhu = parseFloat(document.getElementById("suhu").value)
+    let lembap = document.getElementById("lembap").value
 
-    if(tanamanDB.length === 0){
-        alert("Database belum siap, tunggu beberapa detik lalu coba lagi.");
-        return;
-    }
-
-    let ph = parseFloat(document.getElementById("ph").value);
-    let suhu = parseFloat(document.getElementById("suhu").value);
-    let kelembapan = document.getElementById("kelembapan").value;
-
-    if (isNaN(ph) || isNaN(suhu) || kelembapan === "") {
-        alert("Lengkapi semua data!");
-        return;
-    }
-
-    let hasil = tanamanDB.map(t => ({
-        nama: t.nama,
-        skor: hitungSkor(t, ph, suhu, kelembapan)
-    }));
-
-    hasil.sort((a,b)=> b.skor - a.skor);
-
-    let rankingHTML = "";
-    hasil.slice(0,5).forEach((t,i)=>{
-        rankingHTML += `
+if(!ph || !suhu){
+alert("Isi pH dan suhu tanah terlebih dahulu")
+return
+}
+    function tampilkanRanking(data){
+    let div = document.getElementById("ranking")
+        div.innerHTML=""
+        data.forEach((item,i)=>{
+        div.innerHTML += `
         <div class="ranking-item">
-            <strong>#${i+1} ${t.nama}</strong><br>
-            ${t.skor}% kecocokan
-        </div>`;
-    });
+        <b>${i+1}. ${item.nama}</b>
+        <span>Skor : ${item.skor}</span>
+        </div>`})
+}
 
-    document.getElementById("ranking").innerHTML = rankingHTML;
-
-    // Grafik Radar
-    let skorPH = (ph/14)*100;
-    let skorSuhu = (suhu/40)*100;
-    let skorLembap = kelembapan==="kering"?40:
-                     kelembapan==="sedang"?80:100;
-
-    const ctx = document.getElementById('chartTanah').getContext('2d');
-
-    if (chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-    type:'radar',
-    data:{
-        labels:['pH','Suhu','Kelembapan'],
-        datasets:[{
-            label:'Kondisi Tanah',
-            data:[skorPH, skorSuhu, skorLembap],
-            
-            backgroundColor: 'rgba(242, 0, 255, 0.8)',  // warna isi
-            borderColor: '#e6001b',                     // garis utama
-            borderWidth: 2,
-            pointBackgroundColor: '#e6001b',
-            pointBorderColor: '#ffffff',
-            pointHoverBackgroundColor: '#ffffff',
-            pointHoverBorderColor: '#e6001b'
-        }]
-    },
-    options:{
-        responsive:true,
-        scales:{ 
-            r:{ 
-                min:0, 
-                max:100,
-                grid: { color: 'rgba(255,255,255,0.2)' },
-                angleLines: { color: 'rgba(255,255,255,0.2)' },
-                pointLabels: { color: 'white' },
-                ticks: { backdropColor: 'transparent', color: 'white' }
-            } 
-        },
-        plugins: {
-            legend: {
-                labels: { color: 'white' }
-            }
-        }
-    }
-});
+function buatChart(ph,suhu,lembap){
+    let skorPH = ph/14*100
+    let skorSuhu = suhu/40*100
+    let skorLembap = 50
+        if(lembap==="sangat_kering") skorLembap=20
+        if(lembap==="kering") skorLembap=40
+        if(lembap==="normal") skorLembap=60
+        if(lembap==="basah") skorLembap=80
+        if(lembap==="sangat_basah") skorLembap=100
+        let ctx = document.getElementById("chart")
+if(chart) chart.destroy()
+chart = new Chart(ctx,{
+type:'radar',
+data:{
+labels:['pH Tanah','Suhu Tanah','Kelembapan Tanah'],
+datasets:[{
+label:'Kondisi Tanah',
+data:[skorPH,skorSuhu,skorLembap],
+backgroundColor:'rgba(0,255,150,0.2)',
+borderColor:'#00ff95',
+borderWidth:2,
+pointBackgroundColor:'#00ff95'
+}]
+},
+options:{
+scales:{
+r:{
+min:0,
+max:100,
+grid:{color:'rgba(255,255,255,0.2)'},
+angleLines:{color:'rgba(255,255,255,0.2)'},
+pointLabels:{color:'white'}
+}
+},
+plugins:{
+legend:{
+labels:{color:'white'}
+}
+}
+}
+})
 }
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
