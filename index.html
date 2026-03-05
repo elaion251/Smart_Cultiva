@@ -97,6 +97,10 @@ function hitungSkor(t, ph, suhu, kelembapan) {
     if (kelembapan === t.kelembapan) {
         skor += 20;
     }
+    
+    if(tanaman.kelembapan.includes(kelembapan)){
+    skor += 40;
+}
 
     return Math.round(skor);
 }
