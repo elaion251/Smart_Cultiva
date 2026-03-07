@@ -1,86 +1,188 @@
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(to right, #134E5E, #71B280);
-    margin: 0;
-    padding: 20px;
-    color: white;
+/* RESET */
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, Helvetica, sans-serif;
 }
 
-.dashboard {
-    max-width: 1200px;
-    margin: auto;
+/* BODY */
+
+body{
+
+background:#0f172a;
+color:white;
+min-height:100vh;
+display:flex;
+justify-content:center;
+padding:30px;
+
 }
 
-.card {
-    background: rgba(255,255,255,0.1);
-    padding: 20px;
-    border-radius: 15px;
-    margin-bottom: 20px;
-    backdrop-filter: blur(10px);
+/* CONTAINER */
+
+.container{
+
+width:100%;
+max-width:1100px;
+
 }
 
-input, select {
-    width: 100%;
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    margin-top: 5px;
+/* TITLE */
+
+h1{
+
+text-align:center;
+margin-bottom:10px;
+font-size:32px;
+
 }
 
-button {
-    margin-top: 15px;
-    padding: 12px;
-    width: 100%;
-    border-radius: 10px;
-    border: none;
-    font-weight: bold;
-    background: #00e676;
-    cursor: pointer;
+.subtitle{
+
+text-align:center;
+margin-bottom:25px;
+color:#cbd5e1;
+
 }
 
-button:hover {
-    background: #00c853;
+/* CARD */
+
+.card{
+
+background:#1e293b;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
+/* FORM ROW (PH & SUHU TENGAH) */
+
+.form-row{
+
+display:flex;
+justify-content:center;
+gap:30px;
+margin-top:15px;
+flex-wrap:wrap;
+
 }
 
-.ranking-item {
-    background: rgba(0,0,0,0.3);
-    padding: 10px;
-    border-radius: 8px;
-    margin: 5px 0;
+/* FORM GROUP */
+
+.form-group{
+
+display:flex;
+flex-direction:column;
+align-items:center;
+gap:6px;
+
 }
 
-@media(max-width: 768px){
-    .grid { grid-template-columns: 1fr; }
+.form-group-center{
+
+display:flex;
+flex-direction:column;
+align-items:center;
+margin-top:20px;
+gap:6px;
+
 }
 
-/* Smooth Transition */
-body {
-    transition: background 0.4s ease, color 0.4s ease;
+/* INPUT */
+
+input, select{
+
+padding:10px;
+border-radius:8px;
+border:none;
+outline:none;
+font-size:14px;
+
 }
 
-.form-row {
-    display: flex;
-    justify-content: center;   /* posisi tengah horizontal */
-    gap: 30px;
-    margin-top: 15px;
-    flex-wrap: wrap;
+/* INPUT KHUSUS */
+
+.input-small{
+width:160px;
+text-align:center;
+
 }
 
-/* Bungkus tiap input */
-.form-group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;  /* label & input rata tengah */
+/* BUTTON */
+
+button{
+margin-top:20px;
+display:block;
+margin-left:auto;
+margin-right:auto;
+padding:12px 22px;
+background:#22c55e;
+border:none;
+border-radius:8px;
+font-size:16px;
+font-weight:bold;
+cursor:pointer;
+transition:0.2s;
 }
 
-/* Ukuran input */
-.input-small {
-    width: 180px;
-    text-align: center;   /* angka di tengah */
+button:hover{
+background:#16a34a;
+}
+
+/* RESULT GRID */
+
+.result-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:20px;
+}
+
+/* CHART */
+
+.chart-container{
+width:100%;
+height:320px;
+}
+
+.chart-container canvas{
+max-height:320px;
+}
+
+/* RANKING */
+
+#ranking{
+display:flex;
+flex-direction:column;
+gap:10px;
+}
+
+.ranking-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#0f172a;
+padding:12px;
+border-radius:8px;
+border-left:5px solid #22c55e;
+}
+
+/* RANKING NUMBER */
+
+.ranking-item b{
+font-size:16px;
+}
+
+/* RESPONSIVE */
+
+@media (max-width:768px){
+.result-grid{
+grid-template-columns:1fr;
+}
+
+.chart-container{
+height:260px;
+}
 }
